@@ -15,6 +15,19 @@ This implementation develops the Group 8 BFB 321 proposal into a complete Flask 
 
 GitHub usernames are listed only for accounts the member has confirmed. `(GitHub TBD)` means the account is not confirmed yet and must not be guessed.
 
+## Task allocation
+
+This table records work that is visible in the repository history. It stays high-level where a member has not written their own detail. Shared product work from the initial upload is not split into invented personal task lists.
+
+| Member | Focus recorded in the repository |
+|---|---|
+| Andrew Holdt (`u23565081`) | Initial project upload, and the Windows run documentation in `README.md` and `scripts/start.ps1` (Python installation and the Microsoft Store `python` alias). |
+| Austin Ferraz | (TBD / shared) |
+| David de Villiers | (TBD / shared) |
+| David Plumb (`u23526263-hash`) | Documentation and rubric readiness: GitHub usernames, this allocation, submission-checklist clarifications, and contribution notes. |
+
+Austin Ferraz and David de Villiers are full group members. Replace `(TBD / shared)` only when that member records their own work.
+
 ![Dashboard showing stock KPIs and recent movements](docs/screenshots/dashboard.png)
 
 ![Replenishment planner showing full-pack order suggestions](docs/screenshots/replenishment.png)
