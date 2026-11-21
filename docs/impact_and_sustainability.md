@@ -2,7 +2,7 @@
 
 ## Evaluation approach
 
-The project includes a deterministic 28-day model comparison. The same simulated demand and supplier lead times are used for both methods. Both policies open with the same stock: `ceil(daily_mean * OPENING_COVER)` units per SKU, with `OPENING_COVER = 3.2`. The reactive baseline waits until stock reaches zero and then buys a larger catch-up quantity. StockWise reviews every three days and uses the proposal formula, full packs, a R40 delivery fee and a R2 500 review budget.
+The project includes a deterministic 28-day model comparison. The same simulated demand and supplier lead times are used for both methods. Both policies open with the same stock: `ceil(daily_mean * OPENING_COVER)` units per SKU, with `OPENING_COVER = 3.2`. The reactive baseline waits until stock reaches zero and then buys a larger catch-up quantity. StockWise reviews every three days. The simulation builds that basket with `allocate_with_constraints` from `models/replenishment.py`: the proposal formula, full packs, a R40 delivery fee and a R2 500 review budget.
 
 The evaluation covers 20 non-refrigerated SKUs. The headline comparison uses random seed `321`. A sensitivity run repeats both policies for seeds 1–30 at opening cover 3.2, then again at opening cover 4.5. Reproduce the files with `python scripts/evaluate_impact.py`. These figures are simulation outputs and must not be presented as results from operating shops.
 

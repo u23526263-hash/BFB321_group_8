@@ -9,8 +9,15 @@ import csv
 import json
 import math
 import random
+import sys
 from pathlib import Path
 from statistics import median
+
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from models.replenishment import ReplenishmentItem, allocate_with_constraints
 
 
 SEED = 321
@@ -89,23 +96,36 @@ def simulate(
             if daily_cost > 2500:
                 cash_breaches += 1
         elif day % 3 == 0:
-            remaining_cash = cash_budget - 40
-            used_storage = sum(product["stock"] for product in products)
-            remaining_storage = storage_capacity - used_storage
-            basket = []
-            for product in sorted(products, key=lambda item: item["stock"] / item["d"]):
+            items = []
+            for index, product in enumerate(products):
                 on_order = sum(qty for _, qty in product["pipeline"])
-                target = product["d"] * (product["lead"] + 3 + 1)
-                gap = max(0, target - product["stock"] - on_order)
-                quantity = product["pack"] * math.ceil(gap / product["pack"]) if gap else 0
-                pack_cost = product["pack"] * product["cost"]
-                allocated = 0
-                while allocated < quantity and remaining_cash >= pack_cost and remaining_storage >= product["pack"]:
-                    allocated += product["pack"]
-                    remaining_cash -= pack_cost
-                    remaining_storage -= product["pack"]
-                if allocated:
-                    basket.append((product, allocated))
+                items.append(
+                    ReplenishmentItem(
+                        product_id=index,
+                        sku=f"{index:02d}",
+                        name=f"SKU {index + 1}",
+                        daily_demand=product["d"],
+                        lead_time_days=product["lead"],
+                        review_period_days=3,
+                        safety_stock_days=1,
+                        pack_size=product["pack"],
+                        on_hand=product["stock"],
+                        on_order=on_order,
+                        unit_cost=product["cost"],
+                    )
+                )
+            used_storage = sum(product["stock"] for product in products)
+            allocated_items = allocate_with_constraints(
+                items,
+                budget=cash_budget,
+                available_storage_units=max(0, storage_capacity - used_storage),
+                delivery_fee=40,
+            )
+            basket = [
+                (products[item.product_id], item.allocated_quantity)
+                for item in allocated_items
+                if item.allocated_quantity
+            ]
             for product, quantity in basket:
                 if quantity % product["pack"] != 0:
                     pack_violations += 1
