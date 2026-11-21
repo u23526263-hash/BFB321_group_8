@@ -7,10 +7,10 @@
     "availability_percent": 96.8
   },
   "stockwise": {
-    "stockout_sku_days": 5,
+    "stockout_sku_days": 10,
     "emergency_trips": 0,
-    "average_stock_value": 3384.36,
+    "average_stock_value": 3117.73,
     "constraint_breaches": 0,
-    "availability_percent": 99.1
+    "availability_percent": 98.2
   }
 }

@@ -14,10 +14,12 @@ from pathlib import Path
 SEED = 321
 DAYS = 28
 SKU_COUNT = 20
+# Both policies open with the same stock: ceil(daily_mean * OPENING_COVER) units per SKU.
+OPENING_COVER = 3.2
 
 
-def simulate(method: str) -> dict:
-    rng = random.Random(SEED)
+def simulate(method: str, seed: int = SEED, opening_cover: float = OPENING_COVER) -> dict:
+    rng = random.Random(seed)
     products = []
     for index in range(SKU_COUNT):
         # A small-shop demand profile: most SKUs sell below two units per day.
@@ -31,7 +33,7 @@ def simulate(method: str) -> dict:
                 "pack": pack,
                 "cost": cost,
                 "lead": lead,
-                "stock": math.ceil(daily_mean * (3.2 if method == "reactive" else 4.5)),
+                "stock": math.ceil(daily_mean * opening_cover),
                 "pipeline": [],
             }
         )
