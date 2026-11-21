@@ -2,15 +2,25 @@
   "reactive": {
     "stockout_sku_days": 18,
     "emergency_trips": 56,
+    "emergency_collections": 56,
+    "emergency_trip_days": 23,
     "average_stock_value": 3507.05,
     "constraint_breaches": 0,
+    "cash_breaches": 0,
+    "storage_breach_days": 0,
+    "pack_violations": 0,
     "availability_percent": 96.8
   },
   "stockwise": {
     "stockout_sku_days": 10,
     "emergency_trips": 0,
+    "emergency_collections": 0,
+    "emergency_trip_days": 0,
     "average_stock_value": 3117.73,
     "constraint_breaches": 0,
+    "cash_breaches": 0,
+    "storage_breach_days": 0,
+    "pack_violations": 0,
     "availability_percent": 98.2
   }
 }

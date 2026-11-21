@@ -40,7 +40,11 @@ def simulate(method: str, seed: int = SEED, opening_cover: float = OPENING_COVER
 
     stockout_days = 0
     emergency_trips = 0
+    emergency_trip_days = 0
     constraint_breaches = 0
+    cash_breaches = 0
+    storage_breach_days = 0
+    pack_violations = 0
     inventory_values = []
     cash_budget = 2500.0
     storage_capacity = 600
@@ -60,15 +64,23 @@ def simulate(method: str, seed: int = SEED, opening_cover: float = OPENING_COVER
 
         if method == "reactive":
             daily_cost = 0.0
+            restocked_today = False
             for product in products:
                 if product["stock"] == 0:
                     emergency_trips += 1
+                    restocked_today = True
                     # Reactive buying tends to use a larger "catch-up" quantity after a stockout.
                     quantity = product["pack"] * math.ceil((product["d"] * 9) / product["pack"])
+                    if quantity % product["pack"] != 0:
+                        pack_violations += 1
                     daily_cost += quantity * product["cost"]
                     product["stock"] += quantity
+            if restocked_today:
+                emergency_trip_days += 1
             if daily_cost > cash_budget:
                 constraint_breaches += 1
+            if daily_cost > 2500:
+                cash_breaches += 1
         elif day % 3 == 0:
             remaining_cash = cash_budget - 40
             used_storage = sum(product["stock"] for product in products)
@@ -88,18 +100,38 @@ def simulate(method: str, seed: int = SEED, opening_cover: float = OPENING_COVER
                 if allocated:
                     basket.append((product, allocated))
             for product, quantity in basket:
+                if quantity % product["pack"] != 0:
+                    pack_violations += 1
                 product["pipeline"].append((day + product["lead"], quantity))
+            if basket:
+                basket_spend = sum(quantity * product["cost"] for product, quantity in basket)
+                if basket_spend + 40 > 2500:
+                    cash_breaches += 1
 
+        on_hand_units = sum(product["stock"] for product in products)
+        if on_hand_units > storage_capacity:
+            storage_breach_days += 1
         inventory_values.append(sum(product["stock"] * product["cost"] for product in products))
 
     availability = 100 * (1 - stockout_days / (DAYS * SKU_COUNT))
     return {
         "stockout_sku_days": stockout_days,
         "emergency_trips": emergency_trips,
+        "emergency_collections": emergency_trips,
+        "emergency_trip_days": emergency_trip_days,
         "average_stock_value": round(sum(inventory_values) / len(inventory_values), 2),
         "constraint_breaches": constraint_breaches,
+        "cash_breaches": cash_breaches,
+        "storage_breach_days": storage_breach_days,
+        "pack_violations": pack_violations,
         "availability_percent": round(availability, 1),
     }
+
+
+def _write_json(path: Path, payload: dict) -> None:
+    """Write JSON using CRLF and no trailing newline, matching the committed results file."""
+    text = json.dumps(payload, indent=2).replace("\n", "\r\n")
+    path.write_bytes(text.encode("utf-8"))
 
 
 def main():
@@ -107,7 +139,7 @@ def main():
     output_dir = project_root / "docs" / "generated"
     output_dir.mkdir(parents=True, exist_ok=True)
     results = {"reactive": simulate("reactive"), "stockwise": simulate("stockwise")}
-    (output_dir / "impact_results.json").write_text(json.dumps(results, indent=2), encoding="utf-8")
+    _write_json(output_dir / "impact_results.json", results)
     with (output_dir / "impact_results.csv").open("w", newline="", encoding="utf-8") as stream:
         writer = csv.writer(stream)
         writer.writerow(["metric", "reactive_baseline", "stockwise_rule"])
