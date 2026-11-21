@@ -20,7 +20,12 @@ SKU_COUNT = 20
 OPENING_COVER = 3.2
 
 
-def simulate(method: str, seed: int = SEED, opening_cover: float = OPENING_COVER) -> dict:
+def simulate(
+    method: str,
+    seed: int = SEED,
+    opening_cover: float = OPENING_COVER,
+    order_log: list | None = None,
+) -> dict:
     rng = random.Random(seed)
     products = []
     for index in range(SKU_COUNT):
@@ -104,6 +109,8 @@ def simulate(method: str, seed: int = SEED, opening_cover: float = OPENING_COVER
             for product, quantity in basket:
                 if quantity % product["pack"] != 0:
                     pack_violations += 1
+                if order_log is not None:
+                    order_log.append((product["pack"], quantity))
                 product["pipeline"].append((day + product["lead"], quantity))
             if basket:
                 basket_spend = sum(quantity * product["cost"] for product, quantity in basket)
